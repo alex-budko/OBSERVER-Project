@@ -1,11 +1,15 @@
+from flask import Flask, request
 import openai
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app) 
 
 openai.api_key = "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"
 
+MODEL = "gpt-3.5-turbo"
 
 def categorize_input(samples, new_message):
-    MODEL = "gpt-3.5-turbo"
-    # Get the list of unique categories from the samples
     sample_categories = set(sample['category'] for sample in samples)
 
     print(f"Received message: {new_message}")
@@ -20,7 +24,6 @@ def categorize_input(samples, new_message):
 
     messages.append({"role": "user", "content": new_message})
     
-    # Ask the model to categorize the message and provide the list of possible categories
     possible_categories = ', '.join(sample_categories)
 
     system_message = f"Assistant, analyze the previous message and provide the category that it most closely aligns with from this list of possible categories: {possible_categories}. You should only respond with a category."
@@ -46,17 +49,15 @@ def categorize_input(samples, new_message):
     return category
 
 
-def generate_response(samples, message, category):
-    MODEL = "gpt-3.5-turbo"
-    
+def generate_response(samples, message, category):    
     sample_messages = [sample for sample in samples if sample['category'] == category]
 
-    system_message = f"""Your mission, as an advanced language learning model (LLM), is to emulate the intricate balance of clinical expertise, heartfelt empathy, and rigid confidentiality exercised by proficient medical professionals. Your task is to generate a single comprehensive response to the patient's message below, ensuring it aligns with prior responses for the category '{category}'. The response should adhere to the following guidelines:
+    system_message = f"""Your mission, as an advanced language learning model (LLM), is to emulate the intricate balance of clinical expertise, heartfelt empathy, and rigid confidentiality exercised by proficient medical professionals. Your task is to generate 3 comprehensive responses to the patient's message below that are at most 150 characters each, ensuring it aligns with prior responses for the category '{category}'. The responses should adhere to the following guidelines:
         - *Clinical Accuracy*: Align with recent, evidence-based medical guidelines and standards of practice.
         - *Empathy and Compassion*: Reflect empathy, understanding, and compassion. Acknowledge the patient's feelings and concerns, and offer reassurances.
         - *Strict Confidentiality*: Do not incorporate any personally identifiable patient information.
 
-        Your goal is to provide an ideal simulated response that a patient would receive from a doctor, maintaining the balance of medical accuracy, empathy, and confidentiality."""
+        Your goal is to provide 3 simulated response options that are at most 150 characters each that a patient would receive from a doctor, maintaining the balance of medical accuracy, empathy, and confidentiality."""
 
     messages = [{"role": "system", "content": system_message}]
 
@@ -70,14 +71,15 @@ def generate_response(samples, message, category):
     response = openai.ChatCompletion.create(
         model=MODEL,
         messages=messages,
-        temperature=0.2,
-        max_tokens=150
+        temperature=0.3,
+        max_tokens=450
     )
+
+    print(response)
 
     reply = response['choices'][0]['message']['content']
     print(f"Generated response: {reply}")
 
-    # Add the conversation to samples
     samples.append(
         {"message": message, "category": category, "response": reply})
 
@@ -103,7 +105,7 @@ samples = [
     {"message": "Do you have my lab results?", "category": "Post Test Care",
         "response": "I noticed that chemistry tests were also run at that time and the calcium is minimally high.  This should be repeated to see if that continues or was simply a lab fluctuation."},
     {"message": "Did you see my results? Is it ok to continue meds as prescribed?", "category": "Post Test Care",
-        "response": "Dr Smith  reviewed your labs that were drawn on the 11th and says that you can continue on medication. Your labs are fine. Please take the Soriatane prior to your biggest meal each day."},
+        "response": "Dr X reviewed your labs that were drawn on the 11th and says that you can continue on medication. Your labs are fine. Please take the Soriatane prior to your biggest meal each day."},
     {"message": "Since quitting the Sertraline an, I feel  more energy. I guess it is working. I would appreciate if you can send a refill prescription for Bupropion to my Pharmacy. Thank!",
         "category": "Med Management", "response": "Refill sent to pharmacy. You should be able to pick up this afternoon."},
     {"message": "I feel like I need a boost to my oxy meds. Is there one that I can adjust to help me? I'm struggling to get anything done each day.", "category": "Med Management",
@@ -114,9 +116,12 @@ samples = [
         "category": "When to Follow Up", "response": "I am sorry you do not feel well. It is possible that you had viral infection. There is no treatment for cough associated with viral respiratory infections, cough suppressants could provide some relief especially at night. Corticosteroids are usually not helpful. It might be important to consider testing for whooping cough."}
 ]
 
-# Step 2: Obtain a new patient message and categorize it
-new_message = "Hey Doc. I have some kind of a rash. Should I come in?"
-new_category = categorize_input(samples, new_message)
+@app.route('/api/generate-response', methods=['POST'])
+def handle_response_generation():
+    message = request.json['message']
+    category = request.json['category']
+    reply, _ = generate_response(samples, message, category)
+    return {"response": reply}
 
-# Step 3: Based on the message and category, generate a response and update the samples
-new_response, updated_samples = generate_response(samples, new_message, new_category)
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
