@@ -10,13 +10,22 @@ openai.api_key = "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"
 MODEL = "gpt-3.5-turbo"
 
 def analyze_literacy_level(message):
-    system_message = f"Estimate the literacy level of the following message: '{message}'"
+    system_message = f"""
+    Given the following patient's message to a doctor, please analyze and categorize its literacy level, considering factors like grammar, vocabulary complexity, sentence structure, and possible regional linguistic influences. Use the U.S. school grade system for categorization, where 1st grade represents basic literacy and a College level indicates a highly advanced literacy level.
+    
+    The message is: '{message}'. 
+
+    Consider the following:
+    - If the message uses simple sentences, basic vocabulary, and contains grammatical errors, you might categorize it as 'Elementary School' level.
+    - If the message includes complex vocabulary, flawless grammar, and concepts indicative of higher education, it might be 'College level'.
+    - If the message shows signs of regional dialect or slang, please mention it as well.
+    """
 
     response = openai.ChatCompletion.create(
         model=MODEL,
         messages=[{"role": "system", "content": system_message}],
         temperature=0.5,
-        max_tokens=60
+        max_tokens=100
     )
 
     literacy_level = response['choices'][0]['message']['content'].strip()
@@ -25,15 +34,24 @@ def analyze_literacy_level(message):
 
 def correct_grammar(message):
     system_message = f"""
-        Correct the grammar in the following medical message: "{message}"
-        """
+    You are a language AI tasked with assisting in medical communication. The following is a message from a patient to a doctor: "{message}". This message might contain grammatical, syntactical, or usage errors, and it may not be entirely clear. 
+
+    Your task is threefold:
+
+    1. Correct the language errors: Fix any grammatical, spelling, punctuation, or syntactical errors in the message.
+    2. Improve clarity and readability: Ensure the message is easily understandable, while preserving the original meaning and patient's tone. 
+    3. Optimize for medical analysis: Make sure the language used and the structure of the message supports further analysis of its content, especially for determining the level of urgency and preparing for a doctor's response.
+
+    Remember, accurate communication is paramount in a medical context.
+    """
+
     response = openai.ChatCompletion.create(
         model=MODEL,
         messages=[
             {"role": "system", "content": system_message},
         ],
         temperature=0.5,
-        max_tokens=150
+        max_tokens=200
     )
 
     corrected_message = response['choices'][0]['message']['content'].strip()
@@ -143,5 +161,5 @@ def process_message(original_message):
 
     return response, urgency
 
-original_message = "Yall doctors scary. I hav some some red rush from a party I went too, was amazin'. Could it be AIDS?"
+original_message = ""
 final_message, urgency = process_message(original_message)
