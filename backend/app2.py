@@ -213,15 +213,6 @@ samples = [
 #         "response": "I am sorry you do not feel well. It is possible that you had viral infection"}
 # ]
 
-
 original_message = "Mornin'. My leg has been feelin' weird lattely. I's scared of y'all doctors, do I still need to come in?"
-
-# original_message = """Good morning, Doctor. I hope this message finds you well. Over the past week, I've observed a persistent, aberrant sensation in my left lower limb. It's predominantly a numbness interspersed with bouts of tingling, very akin to the sensations evoked by the classic "pins and needles."
-
-# These symptoms have been isolated to my left leg, extending from the knee to the ankle and seem to be exacerbated when I engage in extended periods of sitting or standing. I've noted some relief upon elevating the leg or with light ambulation. No discernible swelling, color change, or temperature differences have been detected.
-
-# Although I have refrained from self-diagnosis, my preliminary research suggests possibilities ranging from peripheral neuropathy to a potential circulation issue, but I am well aware of the limitations of self-evaluation and the broad differential this could entail.
-
-# I am cognizant of the fact that this could be a symptom of a more complex underlying condition and therefore, despite my instinct to downplay this, I believe it's necessary to solicit your professional advice. Your insight would be much appreciated. Thank you."""
 
 _, urgency = process_message(original_message)
