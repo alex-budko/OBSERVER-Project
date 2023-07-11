@@ -4,7 +4,7 @@
 
 import openai
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 MODEL = "gpt-3.5-turbo"
 
@@ -49,7 +49,7 @@ def grammar_edit(message):
 
 
 def urgency_classification(message):
-    system_message = "Assistant, please classify the urgency of the following message. Is it low, medium, or high?"
+    system_message = "Assistant, please classify the urgency of the following message. Is it (1) immediate (most urgent), (2) emergent, (3) urgent, (4) less urgent, and (5) nonurgent based on the ESI triage algorithm?"
     response = openai.ChatCompletion.create(
         model=MODEL,
         messages=[
