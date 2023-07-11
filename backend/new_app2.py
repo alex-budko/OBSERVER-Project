@@ -63,8 +63,6 @@ def urgency_classification(message):
     print(f"Urgency level is: {urgency}")
     return urgency
 
-# Function for Apply Literacy Level Grammar
-
 
 def apply_literacy_level_grammar(message, literacy_level):
     system_message = f"Assistant, please adjust the following message to a '{literacy_level}' literacy level."
