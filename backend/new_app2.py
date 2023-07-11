@@ -1,3 +1,5 @@
+# Message generation pipeline with category
+
 # TODO: Flask
 
 import openai
@@ -10,7 +12,7 @@ MODEL = "gpt-3.5-turbo"
 
 
 def literacy_level_analysis(message):
-    system_message = f"Assistant, please estimate the literacy level of the following message: '{message}'. Is it low, medium, or high?"
+    system_message = f"Assistant, please estimate the literacy level of the following message: '{message}'. Is it preschool, elementary, highschool or higher education level?"
     response = openai.ChatCompletion.create(
         model=MODEL,
         messages=[
@@ -47,7 +49,7 @@ def grammar_edit(message):
 
 
 def urgency_classification(message):
-    system_message = "Assistant, please classify the urgency of the following message: low, medium, or high."
+    system_message = "Assistant, please classify the urgency of the following message. Is it low, medium, or high?"
     response = openai.ChatCompletion.create(
         model=MODEL,
         messages=[

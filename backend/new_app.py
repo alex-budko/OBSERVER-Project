@@ -1,13 +1,16 @@
+# TODO: how is this different from app.py?
+
 from flask import Flask, request
 import openai
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app)
 
 openai.api_key = "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"
 
 MODEL = "gpt-3.5-turbo"
+
 
 def categorize_input(samples, new_message):
     sample_categories = set(sample['category'] for sample in samples)
@@ -18,12 +21,12 @@ def categorize_input(samples, new_message):
     for sample in samples:
         messages += [
             {"role": "user", "content": sample["message"]},
-            {"role": "assistant", 
+            {"role": "assistant",
                 "content": f"The category of the message is {sample['category']}. The assistant response was: {sample['response']}."},
         ]
 
     messages.append({"role": "user", "content": new_message})
-    
+
     possible_categories = ', '.join(sample_categories)
 
     system_message = f"Assistant, analyze the previous message and provide the category that it most closely aligns with from this list of possible categories: {possible_categories}. You should only respond with a category."
@@ -38,7 +41,7 @@ def categorize_input(samples, new_message):
     )
 
     category = response['choices'][0]['message']['content'].strip()
-    
+
     # Check that the outputted category is a valid category from the samples
     if category not in sample_categories:
         print("Category not found in samples. Defaulting to 'Prognosis'.")
@@ -49,8 +52,9 @@ def categorize_input(samples, new_message):
     return category
 
 
-def generate_response(samples, message, category):    
-    sample_messages = [sample for sample in samples if sample['category'] == category]
+def generate_response(samples, message, category):
+    sample_messages = [
+        sample for sample in samples if sample['category'] == category]
 
     system_message = f"""Your mission, as an advanced language learning model (LLM), is to emulate the intricate balance of clinical expertise, heartfelt empathy, and rigid confidentiality exercised by proficient medical professionals. Your task is to generate 3 comprehensive responses to the patient's message below that are at most 150 characters each, ensuring it aligns with prior responses for the category '{category}'. The responses should adhere to the following guidelines:
         - *Clinical Accuracy*: Align with recent, evidence-based medical guidelines and standards of practice.
@@ -116,12 +120,14 @@ samples = [
         "category": "When to Follow Up", "response": "I am sorry you do not feel well. It is possible that you had viral infection. There is no treatment for cough associated with viral respiratory infections, cough suppressants could provide some relief especially at night. Corticosteroids are usually not helpful. It might be important to consider testing for whooping cough."}
 ]
 
+
 @app.route('/api/generate-response', methods=['POST'])
 def handle_response_generation():
     message = request.json['message']
     category = request.json['category']
     reply, _ = generate_response(samples, message, category)
     return {"response": reply}
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
