@@ -1,6 +1,7 @@
 from flask import Flask, request
 import openai
 from flask_cors import CORS
+import pandas as pd
 
 app = Flask(__name__)
 CORS(app) 
@@ -8,6 +9,40 @@ CORS(app)
 openai.api_key = "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"
 
 MODEL = "gpt-3.5-turbo"
+
+def process_message(original_message):
+    literacy_level = analyze_literacy_level(original_message)
+    print("Literacy Level: ", literacy_level)
+    corrected_message = correct_grammar(original_message)
+    urgency = classify_urgency(corrected_message)
+    print("Urgency: ", urgency)
+    response = generate_response(samples, corrected_message, literacy_level)
+
+    return response, urgency
+
+def process_csv_file(filename):
+    df = pd.read_csv(filename)
+    
+    if 'patient_message' not in df.columns:
+        raise ValueError("The provided CSV file must contain a 'patient_message' column.")
+    
+    for column in ['literacy_level', 'urgency_level', 'generated_response']:
+        if column not in df.columns:
+            df[column] = None
+
+    for index, row in df.iterrows():
+        patient_message = row['patient_message']
+        literacy_level = analyze_literacy_level(patient_message)
+        corrected_message = correct_grammar(patient_message)
+        urgency = classify_urgency(corrected_message)
+        response, _ = generate_response(samples, corrected_message, literacy_level)
+
+        df.loc[index, 'literacy_level'] = literacy_level
+        df.loc[index, 'urgency_level'] = urgency
+        df.loc[index, 'generated_response'] = response
+    
+    df.to_csv(filename, index=False)
+
 
 def analyze_literacy_level(message):
     system_message = f"""
@@ -19,16 +54,19 @@ def analyze_literacy_level(message):
     - If the message uses simple sentences, basic vocabulary, and contains grammatical errors, you might categorize it as 'Elementary School' level.
     - If the message includes complex vocabulary, flawless grammar, and concepts indicative of higher education, it might be 'College level'.
     - If the message shows signs of regional dialect or slang, please mention it as well.
+    
+    Please provide only the classification level, such as "Elementary School", "Middle School", "High School", or "College Level", without any additional explanation or reasoning.
     """
 
     response = openai.ChatCompletion.create(
         model=MODEL,
         messages=[{"role": "system", "content": system_message}],
         temperature=0.5,
-        max_tokens=100
+        max_tokens=60
     )
 
     literacy_level = response['choices'][0]['message']['content'].strip()
+    literacy_level = literacy_level.split(":")[-1].strip()
 
     return literacy_level
 
@@ -90,7 +128,7 @@ def generate_response(samples, new_message, literacy_level):
         - Adaptability: Mirror the patient's language style and complexity. If the patient uses simple language, respond with simple, clear language. If they use medical jargon, you can use similar language.
         - Clarity and Simplification: If complex medical concepts are involved, break them down into simpler, more understandable explanations.
 
-        The patient's literacy level is estimated to be '{literacy_level}'.
+        The patient's literacy level is estimated to be '{literacy_level}', make sure that the generated response reflects the same literacy level for a greater degree of comprehension for the patient.
 
         Now, generate a simulated response as if you are a doctor, maintaining the balance of medical accuracy, empathy, confidentiality, and appropriate literacy level.
         """
@@ -122,7 +160,6 @@ def generate_response(samples, new_message, literacy_level):
 
     return reply, samples
 
-# Step 1: Collect sample inputs and responses
 samples = [
     {"message": "Just wanted to make sure that you got my reply from yesterday regarding all of my symptoms are the same - nothing different and all of the previous epidurals worked great.  Pain pretty bad so hope apt will be soon.",
         "response": "Good morning. I notified Dr Smith and he will call you this afternoon."},
@@ -151,15 +188,7 @@ samples = [
     {"message": "I have been treated by primary physician for bronchitis that has caused wheezing, chest tightness, and a horrible cough. I had a chest x-ray Friday and it was okay. I took levaquin for 7 days.  I added musinex to the normal medications. The cough has improved a little but it is still frequent. Is there any thing else I can do to get over this sickness?",
         "response": "I am sorry you do not feel well. It is possible that you had viral infection"}]
 
-def process_message(original_message):
-    literacy_level = analyze_literacy_level(original_message)
-    print("Literacy Level: ", literacy_level)
-    corrected_message = correct_grammar(original_message)
-    urgency = classify_urgency(corrected_message)
-    print("Urgency: ", urgency)
-    response = generate_response(samples, corrected_message, literacy_level)
 
-    return response, urgency
 
-original_message = ""
+original_message = "Mornin'. My leg has been feelin' weird lattely. I's scared of y'all doctors, do I still need to come in?"
 final_message, urgency = process_message(original_message)
