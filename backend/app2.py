@@ -182,10 +182,53 @@ samples = [
 ]
 
 patient_messages = [
-    "Hey, my head hurts. What should I do?",
+'How much epipnephrine can i take when i have anaphalaxis?'
 ]
-
 for message in patient_messages:
     print(f"Patient Message: {message}\n")
     response, urgency = process_message(message)
 
+
+# previous v
+def categorize_input(samples, new_message):
+    # Extract categories from samples
+    sample_categories = set(sample['category'] for sample in samples)
+    possible_categories = ', '.join(sample_categories)
+
+    # Print received messages
+    print(f"Received message: {new_message}")
+
+    messages = []
+
+    system_message = f"As an AI medical assistant, you have the ability to categorize patient messages. Your job is to analyze the incoming message and assign it to one, and only one, of these potential categories: {possible_categories}."
+    messages.append(
+        {"role": "system", "content": system_message})
+
+    for sample in samples:
+        messages += [
+            {"role": "user", "content": sample["message"]},
+            {"role": "assistant",
+                "content": f"{sample['category']}"},
+        ]
+
+    messages.append({"role": "user", "content": new_message})
+
+    response = openai.ChatCompletion.create(
+        model=MODEL,
+        messages=messages,
+        temperature=0.1,
+        max_tokens=50
+    )
+
+    category = response['choices'][0]['message']['content'].strip()
+
+    print(f"Message intially categorized as: {category}")
+
+    # Check that the outputted category is a valid category from the samples
+    if category not in sample_categories:
+        print("Category not found in samples. Defaulting to 'Prognosis'.")
+        category = "Prognosis"
+
+    print(f"Message categorized as: {category}")
+
+    return category

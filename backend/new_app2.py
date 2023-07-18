@@ -159,7 +159,6 @@ def generate_response(samples, message, category, literacy_level, urgency):
     return reply, samples
 
 
-# Step 1: Collect sample inputs and categories
 samples = [
     {"message": "Just wanted to make sure that you got my reply from yesterday regarding all of my symptoms are the same - nothing different and all of the previous epidurals worked great.  Pain pretty bad so hope apt will be soon.",
         "category": "Risk factors for disease", "response": "Good morning. I notified Dr Smith and he will call you this afternoon."},
