@@ -169,8 +169,6 @@ def generate_response(samples, message, category, literacy_level, urgency):
 
     return reply, samples
 
-
-# Step 1: Collect sample inputs and categories
 samples = [
     {"message": "Just wanted to make sure that you got my reply from yesterday regarding all of my symptoms are the same - nothing different and all of the previous epidurals worked great.  Pain pretty bad so hope apt will be soon.",
         "category": "Risk factors for disease", "response": "Good morning. I notified Dr Smith and he will call you this afternoon."},
@@ -199,9 +197,6 @@ samples = [
     {"message": "I have been treated by primary physician for bronchitis that has caused wheezing, chest tightness, and a horrible cough. I had a chest x-ray Friday and it was okay. I took levaquin for 7 days.  I added musinex to the normal medications. The cough has improved a little but it is still frequent. Is there any thing else I can do to get over this sickness?",
         "category": "When to Follow Up", "response": "I am sorry you do not feel well. It is possible that you had viral infection. There is no treatment for cough associated with viral respiratory infections, cough suppressants could provide some relief especially at night. Corticosteroids are usually not helpful. It might be important to consider testing for whooping cough."}
 ]
-
-# samples = []
-
 
 message = '''
 How much epipnephrine can i take when i have anaphalaxis?

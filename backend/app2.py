@@ -10,7 +10,6 @@ openai.api_key = "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"
 
 MODEL = "gpt-3.5-turbo"
 
-
 def process_message(original_message):
     literacy_level = analyze_literacy_level(original_message)
 
