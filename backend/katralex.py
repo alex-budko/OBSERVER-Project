@@ -1,8 +1,10 @@
 
 import openai
 from MessageReader import MessageReader
+import subprocess
+import csv
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 MODEL = "gpt-3.5-turbo"
 
@@ -11,7 +13,7 @@ def literacy_level_analysis(message):
     '''
     Function for Literacy Level Analysis
     '''
-    system_message = f"As an assistant trained in language understanding, your role is to provide a simple one-word analysis of the literacy level in the given text. The categories are: elementary-school, middle-school, high-school, or higher-education."
+    system_message = f"As an assistant trained in language understanding, your role is to provide a simple one-word analysis of the literacy level in the given text. The categories are: middle-school, high-school, or higher-education."
     response = openai.ChatCompletion.create(
         model=MODEL,
         messages=[
@@ -109,9 +111,9 @@ def categorize_input(samples, new_message):
         messages += [
             {"role": "user", "content": sample["message"]},
             {"role": "assistant",
-                "content": f"Chain of thought: {sample['chain']}"},
-            {"role": "assistant",
                 "content": f"{sample['category']}"},
+            {"role": "assistant",
+                "content": f"Chain of thought: {sample['chain']}"}
         ]
 
 
@@ -142,7 +144,7 @@ def generate_response(samples, message, category, urgency):
     sample_messages = [
         sample for sample in samples if sample['category'] == category]
 
-    system_message = f"You're a personal physician whom the patient will consult. Your responsibility is to formulate concise (preferably under 150 characters), compassionate, and medically accurate responses to patient messages in the '{category}' category with a '{urgency}' urgency level, and to direct them to 'my' office offer 'my' help if necessary."
+    system_message = f"You're a personal physician whom the patient will consult. Your responsibility is to formulate concise (preferably under 150 characters), compassionate, and medically accurate responses to patient messages in the '{category}' category with a '{urgency}' urgency level, and to direct them to 'my' office offer 'my' help if necessary. Ask follow up questions if not enough information is provided. If the situation is very urgent or requires on-site evaluation, you should ask the patient to come in."
 
     messages = [{"role": "system", "content": system_message}]
 
@@ -159,41 +161,57 @@ def generate_response(samples, message, category, urgency):
         max_tokens=450
     )
 
-    # print(response)
-
     reply = response['choices'][0]['message']['content']
     print(f"Original generated response: {reply}")
 
-    samples.append(
-        {"message": message, "category": category, "response": reply})
+    # samples.append(
+    #     {"message": message, "category": category, "response": reply})
 
     return reply, samples
 
+def generate_validation_responses(validation_set):
+    responses = []
+
+    # Create new csv file
+    with open('responses.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        # Write the header
+        writer.writerow(["message", "category", "urgency", "literacy", "response"])
+
+        for message in validation_set:
+            print('here')
+            # Step 2: Analyze Literacy Level
+            literacy_level = literacy_level_analysis(message['message'])
+
+            # Step 3: Grammar Edit
+            message_edited = grammar_edit(message['message'])
+
+            # Step 4: Categorize Input
+            category = categorize_input(samples, message_edited)
+
+            # Step 5: Urgency Classification
+            urgency = urgency_classification(message_edited)
+
+            # Step 6: Generate Response
+            reply, _ = generate_response(samples, message_edited, category, urgency)
+
+            # Step 7: Apply Literacy Level Grammar
+            final_message = apply_literacy_level_grammar(reply, literacy_level)
+
+            # Write row to csv file
+            writer.writerow([message['message'], category, urgency, literacy_level, final_message])
+
+            responses.append(final_message)
+
+    return responses
+
 message_reader = MessageReader()
+
+# Call catego.py and wait for it to finish
+subprocess.call(["python", "./catego.py"])
+
+# Once catego.py is done, read the new csv file
 message_reader.read_messages_from_csv('./new_csv.csv')
 samples = message_reader.shot
+responses = generate_validation_responses(message_reader.validation)
 
-message = '''
-How much epipnephrine can i take when i have anaphalaxis?
-'''
-
-# Step 2: Analyze Literacy Level
-literacy_level = literacy_level_analysis(message)
-
-# Step 3: Grammar Edit
-message = grammar_edit(message)
-
-# Step 4: Categorize Input
-category = categorize_input(samples, message)
-
-# Step 5: Urgency Classification
-urgency = urgency_classification(message)
-
-# Step 6: Generate Response
-reply, _ = generate_response(
-    samples, message, category, urgency)
-
-# Step 7: Apply Literacy Level Grammar
-final_message = apply_literacy_level_grammar(reply, literacy_level)
-
-print(f"Final response (after applying literacy level): {final_message}")

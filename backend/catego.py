@@ -25,7 +25,7 @@ def generate_chain(message, category):
 
     Adding all the odd numbers (15, 5, 13, 7, 1) gives 41. The answer is False." 
 
-    So, apply this CoT approach to the following patient's message: '{message}', categorized as: '{category}'. Explain how this category was derived from the patient's message by outlining the reasoning steps in 150 characters."""
+    So, apply this CoT approach to the following patient's message: '{message}', categorized as: '{category}'. Explain how this category was derived from the patient's message by outlining the reasoning steps in two sentences and limit it to (150 characters)."""
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -37,9 +37,6 @@ def generate_chain(message, category):
     chain_of_thought = response['choices'][0]['message']['content'].strip()
 
     return chain_of_thought
-
-# Reduce the dataframe to the first 3 rows using df.head(3)
-df = df.head(5)
 
 # Apply the generate_chain function to each row in the reduced DataFrame
 df['Chain'] = df.apply(lambda row: generate_chain(row['Message'], row['Category']), axis=1)
