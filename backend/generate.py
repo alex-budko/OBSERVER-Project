@@ -8,7 +8,7 @@ import csv  # To read/write csv files
 openai.api_key = "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"
 
 # Define the model to use for OpenAI API
-MODEL = "gpt-4.0"
+MODEL = "gpt-3.5-turbo"
 
 # Function to analyze the literacy level of a message using GPT
 def literacy_level_analysis(message):
@@ -170,7 +170,7 @@ def generate_response(samples, message, category, urgency):
 
     reply = response['choices'][0]['message']['content']
     print(f"Original generated response: {reply}")
-    
+
     return reply, samples
 
 def generate_validation_responses(validation_set):

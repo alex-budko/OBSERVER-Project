@@ -30,7 +30,7 @@ def generate_chain(message, category):
 
     # Makes a chat completion request to OpenAI using the system message
     response = openai.ChatCompletion.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": system_message}],
         temperature=0.1,
         max_tokens=300
