@@ -1,13 +1,15 @@
 import openai
 import pandas as pd
-import time
 
-openai.api_key = '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'
+# Sets the API key for OpenAI
+openai.api_key = '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'
 
-df = pd.read_csv('./message_response_list_v0620.xlsx - Sheet1.csv')
+# Reads a CSV file containing the messages into a pandas DataFrame
+df = pd.read_csv('./message_list.csv')
 
 def generate_chain(message, category):
-    system_message = f"""As demonstrated by Wei et al. (2022), the chain-of-thought (CoT) approach enables complex reasoning capabilities through intermediate reasoning steps. 
+    # Defines the system message used to instruct the AI
+    system_message = f"""As demonstrated by Wei et al. (2022), the chain-of-thought (CoT) approach enables complex reasoning capabilities through intermediate reasoning steps:
 
     "Prompt:
 
@@ -21,25 +23,27 @@ def generate_chain(message, category):
     A: Adding all the odd numbers (17, 9, 13) gives 39. The answer is False.
     The odd numbers in this group add up to an even number: 15, 32, 5, 13, 82, 7, 1. 
     A:
-    Output:
 
-    Adding all the odd numbers (15, 5, 13, 7, 1) gives 41. The answer is False." 
+    Output: Adding all the odd numbers (15, 5, 13, 7, 1) gives 41. The answer is False." 
 
     So, apply this CoT approach to the following patient's message: '{message}', categorized as: '{category}'. Explain how this category was derived from the patient's message by outlining the reasoning steps in two sentences and limit it to (150 characters)."""
 
+    # Makes a chat completion request to OpenAI using the system message
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4",
         messages=[{"role": "system", "content": system_message}],
         temperature=0.1,
         max_tokens=300
     )
 
+    # Extracts the chain of thought from the AI's response
     chain_of_thought = response['choices'][0]['message']['content'].strip()
 
     return chain_of_thought
 
-# Apply the generate_chain function to each row in the reduced DataFrame
+# Applies the generate_chain function to each row in the DataFrame,
+# producing a chain of thought for each message and its corresponding category
 df['Chain'] = df.apply(lambda row: generate_chain(row['Message'], row['Category']), axis=1)
 
-# Save the new DataFrame to a CSV file
-df.to_csv('new_csv.csv', index=False)
+# Saves the updated DataFrame to a CSV file
+df.to_csv('chaining_list.csv', index=False)
