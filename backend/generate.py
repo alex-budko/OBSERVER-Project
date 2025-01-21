@@ -1,11 +1,9 @@
-# Import necessary libraries
 import openai  # OpenAI's GPT model API
-from MessageReader import MessageReader  # Custom module to read messages
-import subprocess  # To call external processes like another python script
-import csv  # To read/write csv files
+from MessageReader import MessageReader  # custom module to read messages
+import subprocess  # to call external processes like another python script
+import csv 
 
-# Set OpenAI API key
-openai.api_key = "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"
+openai.api_key = "*"
 
 # Define the model to use for OpenAI API
 MODEL = "gpt-3.5-turbo"
