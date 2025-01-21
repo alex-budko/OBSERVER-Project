@@ -2,7 +2,7 @@ import openai
 import pandas as pd
 
 # Sets the API key for OpenAI
-openai.api_key = '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'
+openai.api_key = '*'
 
 # Reads a CSV file containing the messages into a pandas DataFrame
 df = pd.read_csv('./message_list.csv')
