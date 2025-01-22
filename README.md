@@ -15,7 +15,11 @@ Make sure you have the following installed on your system:
 - `pandas` Python package
 - `scikit-learn` Python package
 
-You can install the packages using pip:
+You can install the packages using pip.
 
-```bash
-pip install openai pandas scikit-learn
+### Setup
+
+Create a `.env` file in the root directory of your project. This file should include:
+
+- API_KEY: specifies OpenAI API Key
+- MODEL: specifies model, i.e. gpt-3.5-turbo

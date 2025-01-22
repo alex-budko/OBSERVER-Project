@@ -1,14 +1,12 @@
 import openai
 import pandas as pd
+import os
 
-# Sets the API key for OpenAI
-openai.api_key = '*'
+openai.api_key = os.getenv("API_KEY")
 
-# Reads a CSV file containing the messages into a pandas DataFrame
 df = pd.read_csv('./message_list.csv')
 
 def generate_chain(message, category):
-    # Defines the system message used to instruct the AI
     system_message = f"""As demonstrated by Wei et al. (2022), the chain-of-thought (CoT) approach enables complex reasoning capabilities through intermediate reasoning steps:
 
     "Prompt:
@@ -28,7 +26,6 @@ def generate_chain(message, category):
 
     So, apply this CoT approach to the following patient's message: '{message}', categorized as: '{category}'. Explain how this category was derived from the patient's message by outlining the reasoning steps in two sentences and limit it to (150 characters)."""
 
-    # Makes a chat completion request to OpenAI using the system message
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": system_message}],
@@ -36,14 +33,10 @@ def generate_chain(message, category):
         max_tokens=300
     )
 
-    # Extracts the chain of thought from the AI's response
     chain_of_thought = response['choices'][0]['message']['content'].strip()
 
     return chain_of_thought
 
-# Applies the generate_chain function to each row in the DataFrame,
-# producing a chain of thought for each message and its corresponding category
 df['Chain'] = df.apply(lambda row: generate_chain(row['Message'], row['Category']), axis=1)
 
-# Saves the updated DataFrame to a CSV file
 df.to_csv('chaining_list.csv', index=False)
